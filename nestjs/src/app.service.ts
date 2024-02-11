@@ -7,6 +7,6 @@ export class AppService {
   }
 
   getFuckYeah(): string {
-    return 'FUCK YeAH';
+    return 'FUCK YEAH';
   }
 }
