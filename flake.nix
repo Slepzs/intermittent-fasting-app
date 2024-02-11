@@ -50,19 +50,6 @@
 
             packages = [pkgs.nodePackages.typescript-language-server pkgs.nodePackages.prettier];
 
-            # ShellHook supabase
-            # https://devenv.sh/reference/shell-hooks/
-            shellHooks = ''
-              echo "Starting Supabase";
-              docker-compose -f ${projectRoot}/supabase/docker/docker-compose.yml up -d
-            '';
-
-
-            shellExitHook = ''
-              echo "Stopping Supabase";
-              docker-compose -f ${projectRoot}/supabase/docker/docker-compose.yml down
-            '';
-
             # env = {
             #   SMTP_HOST = "localhost";
             #   SMTP_PORT = 1025;
@@ -95,12 +82,27 @@
               };
             };
 
+          supabase = 
+            shared
+            // {
+              name = "supabase";
+
+              packages = [pkgs.docker-compose pkgs.docker];
+
+              processes = {
+                supabase.exec = "docker-compose -f ${projectRoot}/supabase/docker/docker-compose.yml up -d";
+              };
+
+            };
+          
+
           default =
             shared
             // {
               packages = [pkgs.nodejs-18_x pnpm npm] ++ shared.packages;
               processes = {
                 nextjs = config.devenv.shells.nextjs.processes.nextjs;
+                supabase = config.devenv.shells.supabase.processes.supabase;
               };
               scripts = {
                 install.exec = ''
