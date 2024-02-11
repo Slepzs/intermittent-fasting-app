@@ -33,7 +33,9 @@
 
         devenv.shells = let
           projectRoot = "$(${pkgs.git}/bin/git rev-parse --show-toplevel)";
-          nextjsRoot = "${projectRoot}/nextjs";
+          nestjsRoot = "${projectRoot}/nestjs";
+          supabaseRoot = "${projectRoot}/supabase";
+          frontend = "${projectRoot}/frontend";
        
           pnpm = pkgs.nodePackages.pnpm;
 
@@ -59,41 +61,55 @@
             # };
 
             services = {
-              mailhog = {
-                enable = true;
-              };
+              # mailhog = {
+              #   enable = true;
+              # };
             };
           };
         in {
-          nextjs =
-            shared
-            // {
-              name = "nextjs";
-
-              # https://devenv.sh/reference/options/
-              packages = [pkgs.nodejs-18_x pnpm] ++ shared.packages;
-
-              processes = {
-                nextjs.exec = "${pnpm}/bin/pnpm --dir ${nextjsRoot} run dev";
-              };
-
-              scripts = {
-                install.exec = "${pnpm}/bin/pnpm --dir ${nextjsRoot} install";
-              };
-            };
 
           supabase = 
             shared
             // {
               name = "supabase";
 
-              packages = [pkgs.docker-compose pkgs.docker];
+              packages = [pkgs.nodejs-18_x npm] ++ shared.packages;
 
               processes = {
-                supabase.exec = "docker-compose -f ${projectRoot}/supabase/docker/docker-compose.yml up -d";
+                supabase.exec = "bash -c 'cd ${supabaseRoot} && supabase start'";
               };
 
             };
+
+          nestjs =
+            shared
+            // {
+              name = "nestjs";
+
+              # https://devenv.sh/reference/options/
+              packages = [pkgs.nodejs-18_x pnpm] ++ shared.packages;
+
+              processes = {
+                nestjs.exec = "sleep 10 && ${pnpm}/bin/pnpm --dir ${nestjsRoot} run start:dev";
+              };
+
+              scripts = {
+                install.exec = "${pnpm}/bin/pnpm --dir ${nestjsRoot} install";
+              };
+            };
+
+          frontend =
+            shared 
+             // {
+               name = "React Native";
+
+               packages = [pkgs.nodejs-18_x pnpm] ++ shared.packages;
+
+                processes = {
+                  frontend.exec = "${pnpm}/bin/pnpm --dir ${frontend} run ios";
+                };
+
+             };
           
 
           default =
@@ -101,12 +117,13 @@
             // {
               packages = [pkgs.nodejs-18_x pnpm npm] ++ shared.packages;
               processes = {
-                nextjs = config.devenv.shells.nextjs.processes.nextjs;
                 supabase = config.devenv.shells.supabase.processes.supabase;
+                nestjs = config.devenv.shells.nestjs.processes.nestjs;
+                frontend = config.devenv.shells.frontend.processes.frontend;
               };
               scripts = {
                 install.exec = ''
-                  ${config.devenv.shells.nextjs.scripts.install.exec}
+                  ${config.devenv.shells.nestjs.scripts.install.exec}
                 '';
               };
 
