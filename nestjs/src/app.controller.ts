@@ -15,11 +15,7 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('/fuckyeah')
-  getFuckYeah(): string {
-    return this.appService.getFuckYeah();
-  }
-
+  /** Example code */
   @Get('post/:id')
   async getPostById(@Param('id') id: string): Promise<PostModel> {
     return this.postService.post({ id: Number(id) });
