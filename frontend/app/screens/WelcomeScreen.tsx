@@ -1,40 +1,37 @@
 import { observer } from "mobx-react-lite"
-import React, { FC } from "react"
-import { Image, ImageStyle, TextStyle, View, ViewStyle } from "react-native"
-import {
-  Text,
-} from "app/components"
+import React, { FC, useEffect, useState } from "react"
+import { ImageStyle, TextStyle, View, ViewStyle, Text } from "react-native"
 import { isRTL } from "../i18n"
-import { AppStackScreenProps } from "../navigators"
+import { AppStackParamList, AppStackScreenProps } from "../navigators"
 import { colors, spacing } from "../theme"
-import { useSafeAreaInsetsStyle } from "../utils/useSafeAreaInsetsStyle"
-
-const welcomeLogo = require("../../assets/images/logo.png")
-const welcomeFace = require("../../assets/images/welcome-face.png")
+import Auth from "app/features/auth/components/Auth"
+import { Session } from "@supabase/supabase-js"
+import { supabase } from "app/features/auth/lib/supabase"
+import { Button } from "app/components/Button"
+import { useNavigation } from "@react-navigation/native"
 
 interface WelcomeScreenProps extends AppStackScreenProps<"Welcome"> {}
 
-export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeScreen(
-) {
+export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeScreen() {
+  const [session, setSession] = useState<Session | null>(null)
+  const navigation = useNavigation()
 
-  const $bottomContainerInsets = useSafeAreaInsetsStyle(["bottom"])
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
+
+    supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+  }, [])
 
   return (
     <View style={$container}>
       <View style={$topContainer}>
-        <Image style={$welcomeLogo} source={welcomeLogo} resizeMode="contain" />
-        <Text
-          testID="welcome-heading"
-          style={$welcomeHeading}
-          tx="welcomeScreen.readyForLaunch"
-          preset="heading"
-        />
-        <Text tx="welcomeScreen.exciting" preset="subheading" />
-        <Image style={$welcomeFace} source={welcomeFace} resizeMode="contain" />
-      </View>
-
-      <View style={[$bottomContainer, $bottomContainerInsets]}>
-        <Text tx="welcomeScreen.postscript" size="md" />
+        <Auth />
+        {session && session.user && <Text>{session.user.id}</Text>}
+        <Button text="Go to Details" onPress={() => navigation.navigate("Home")} />
       </View>
     </View>
   )
