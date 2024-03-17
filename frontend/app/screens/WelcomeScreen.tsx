@@ -1,14 +1,15 @@
 import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useState } from "react"
-import { ImageStyle, TextStyle, View, ViewStyle, Text } from "react-native"
-import { isRTL } from "../i18n"
-import { AppStackParamList, AppStackScreenProps } from "../navigators"
+import { View, ViewStyle, Text, Image, ImageStyle } from "react-native"
+import { AppStackScreenProps } from "../navigators"
 import { colors, spacing } from "../theme"
 import Auth from "app/features/auth/components/Auth"
 import { Session } from "@supabase/supabase-js"
 import { supabase } from "app/features/auth/lib/supabase"
-import { Button } from "app/components/Button"
 import { useNavigation } from "@react-navigation/native"
+import { AutoImage } from "app/components"
+
+const logo = require("../../assets/images/logo.png")
 
 interface WelcomeScreenProps extends AppStackScreenProps<"Welcome"> {}
 
@@ -29,9 +30,11 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeSc
   return (
     <View style={$container}>
       <View style={$topContainer}>
+        <View style={$LogoContainer}>
+          <AutoImage style={$welcomeLogo} source={logo} maxWidth={200} resizeMode="contain" />
+        </View>
         <Auth />
         {session && session.user && <Text>{session.user.id}</Text>}
-        <Button text="Go to Details" onPress={() => navigation.navigate("Home")} />
       </View>
     </View>
   )
@@ -50,31 +53,12 @@ const $topContainer: ViewStyle = {
   paddingHorizontal: spacing.lg,
 }
 
-const $bottomContainer: ViewStyle = {
-  flexShrink: 1,
-  flexGrow: 0,
-  flexBasis: "43%",
-  backgroundColor: colors.palette.neutral100,
-  borderTopLeftRadius: 16,
-  borderTopRightRadius: 16,
-  paddingHorizontal: spacing.lg,
-  justifyContent: "space-around",
+const $LogoContainer: ViewStyle = {
+  alignItems: "center",
+  marginBottom: spacing.xl,
 }
+
 const $welcomeLogo: ImageStyle = {
   height: 88,
   width: "100%",
-  marginBottom: spacing.xxl,
-}
-
-const $welcomeFace: ImageStyle = {
-  height: 169,
-  width: 269,
-  position: "absolute",
-  bottom: -47,
-  right: -80,
-  transform: [{ scaleX: isRTL ? -1 : 1 }],
-}
-
-const $welcomeHeading: TextStyle = {
-  marginBottom: spacing.md,
 }

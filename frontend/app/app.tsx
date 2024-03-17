@@ -30,7 +30,8 @@ import { customFontsToLoad } from "./theme"
 import Config from "./config"
 import { GestureHandlerRootView } from "react-native-gesture-handler"
 import { ViewStyle } from "react-native"
-import { Text } from "./components"
+import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query"
+
 /**
  * Auth Imports
  */
@@ -102,17 +103,21 @@ function App(props: AppProps) {
     config,
   }
 
+  const queryClient = new QueryClient()
+
   // otherwise, we're ready to render the app
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <ErrorBoundary catchErrors={Config.catchErrors}>
-        <GestureHandlerRootView style={$container}>
-          <AppNavigator
-            linking={linking}
-            initialState={initialNavigationState}
-            onStateChange={onNavigationStateChange}
-          />
-        </GestureHandlerRootView>
+        <QueryClientProvider client={queryClient}>
+          <GestureHandlerRootView style={$container}>
+            <AppNavigator
+              linking={linking}
+              initialState={initialNavigationState}
+              onStateChange={onNavigationStateChange}
+            />
+          </GestureHandlerRootView>
+        </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>
   )

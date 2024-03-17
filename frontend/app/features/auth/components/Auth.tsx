@@ -1,10 +1,12 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Alert, StyleSheet, View } from "react-native"
 import { supabase } from "../lib/supabase"
 import { Button, TextField } from "app/components"
 import "react-native-url-polyfill/auto"
+import { useStores } from "app/models/helpers/useStores"
 
 export default function Auth() {
+  const rootStore = useStores()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
@@ -34,6 +36,17 @@ export default function Auth() {
     if (!session) Alert.alert("Please check your inbox for email verification!")
     setLoading(false)
   }
+
+  useEffect(() => {
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      const isAuthenticated = !!session
+      rootStore.setIsAuthenticated(isAuthenticated)
+    })
+
+    return () => {
+      authListener?.subscription?.unsubscribe()
+    }
+  }, [])
 
   return (
     <View style={styles.container}>
